@@ -1,3 +1,6 @@
+
+newdata<-mutate(datapro,stageoflife = ifelse(menopause > "ge40", "postmenopause","premenopause"))
+
 #for the age of 40
 
 ageof40s<-subset(newdata, age == "40-49",na.action = na.omit)
