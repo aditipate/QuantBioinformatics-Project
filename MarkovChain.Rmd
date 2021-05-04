@@ -1,5 +1,5 @@
 ---
-title: "Stat 337 Project"
+title: "Markov Chains"
 author: "Aditi, Ade, Daniela"
 date: "4/24/2021"
 output: pdf_document
@@ -120,15 +120,5 @@ c(lowerbound,upperbound)
 #We can conclude with 95% confidence that the true proportion of degree of malignancy state '1' in the chain is between 0.1723487 and 0.2216513 
 #1->2 
 
-```
-
-
-```{r cars}
-summary(cars)
-```
-
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
