@@ -1,0 +1,86 @@
+---
+title: "Original Analysis"
+author: "Aditi Patel"
+date: "5/3/2021"
+output: word_document
+---
+##Load Dataset 
+```{r}
+#install.packages("jsonlite", repos="https://cran.rstudio.com/")
+library("jsonlite")
+library(dplyr)
+library(mlbench)
+
+json_file <- 'https://datahub.io/machine-learning/breast-cancer/datapackage.json'
+json_data <- fromJSON(paste(readLines(json_file), collapse=""))
+
+# get list of all resources:
+print(json_data$resources$name)
+
+# print all tabular data(if exists any)
+for(i in 1:length(json_data$resources$datahub$type)){
+  if(json_data$resources$datahub$type[i]=='derived/csv'){
+    path_to_file = json_data$resources$path[i]
+    data <- read.csv(url(path_to_file))
+    print(data)
+  }
+}
+data<-data[sample(1:nrow(data)),]
+drop<-c(150, 93, 51, 265, 55, 32, 72, 241)
+drop<-as.integer(drop)
+data <- data[-drop, ]                                            #drop NA rows 
+#columns numbers 1 through 11, convert to numeric 
+#cols<-c(1:9) 
+#data[cols]<-sapply(data[cols], as.numeric) #results in 'NAs introduced by coercion' 
+#convert type to factor  
+data$Class<-factor(data$Class) 
+head(data)
+```
+#logistic regression 
+```{r}
+#logistic regression model with all 9 covariates 
+model <- glm(Class ~ .,family = binomial(logit), data=data)
+summary(model)
+
+#coeffecients of covariates 
+exp(model$coefficients)
+```
+##The most significant predictor of whether a tumor is characterized by recurrence or non-reucrrence is deg.malig. Based on the fitted model deg.malig has a small p-value of 0.00492 (p-value < 0.05) making it an significant covariate in making accurate predictions of tumor Class. Based on the covariate coeffecients, for a unit increase in deg.malig the odds of the tumor being characterized by reccurence increased by 1.939000e+00. 
+
+#AIC selection  
+```{r}
+library(MASS)
+#step AIC selection starting with all 9 covariates 
+summary(stepAIC(model, direction="backward"))
+```
+#Based on the AIC selection node.capsno, node.capsyes, deg.malig are good indicators of tumor Class, however accprding to p-value deg.malig is still the most significant predictor of reccurence and non-recurrence
+
+#reduced logistic regression
+```{r}
+#reduced model with significant covariates (deg.malig)
+reducedmodel<- glm(Class ~ deg.malig,family = binomial(logit), data=data)
+
+exp(reducedmodel$coefficients)
+```
+
+#k-fold cross validation
+```{r}
+#fit reduced model on training set + k-fold cross validation 
+library(caret)
+set.seed(125)
+
+Train <- createDataPartition(data$Class, p=0.75, list=FALSE)
+training <- data[ Train, ]
+testing <- data[ -Train, ]
+
+train.control<-trainControl(method = "repeatedcv", number = 10, savePredictions = TRUE, repeats = 5)
+
+training$Class<-factor(training$Class) 
+
+cvmodel <- train(Class ~ deg.malig, data = training, trControl = train.control, method = "glm", family = "binomial")
+
+print(cvmodel)
+
+```
+#The accuraccy of the fitted model is 68.39% which means the model does not always provide dependable and accurate predictions for tumor class. Further analysis or different training methods could be used in creating a better fitted model or re-assessing significance of covariates.  
+
