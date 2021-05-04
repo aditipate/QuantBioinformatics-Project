@@ -1,1 +1,1 @@
-# Quanitative Bioinformatics (Stat 337) Project
+Quanitative Bioinformatics (Stat 337) Project
