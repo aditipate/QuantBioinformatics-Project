@@ -1,4 +1,7 @@
-
+library(dpylr)
+filter(
+i
+ois
 newdata<-mutate(datapro,stageoflife = ifelse(menopause > "ge40", "postmenopause","premenopause"))
 
 #for the age of 40
@@ -54,6 +57,35 @@ matrixforpro
 
 #x = 1  2  3
 #pi= PA PA PA 
+
+a4049<-filter(data, age == "40-49")
+prmeno<-filter(a4049, menopause == "premeno")
+
+#THere are 81 individuals of premeno out of the data set of 90 people
+
+81/90
+#so PA|PA = 0.9
+# 1 - 0.9 = 0.1
+#The transition from PA to PB is 0.1 for this data set
+#so PB |PB
+9/90 
+1 - 0.9
+
+#hidden markov
+#all premenopause for all sets
+((0.5 *  0.44) *((0.90 * 0.44)^44)* ((0.90 * 0.55)^44))
+#1.598e-12
+
+#half grade 2 and grade 3 premenopause
+
+#for all states being menopause and the grades being equally distributed
+
+
+((0.5 * 0.22) * ((0.1 * 0.22)^30) * ((0.1 * 0.54)^29) * ((0.1 *0.23)^29))
+#1.1056e-135 
+
+
+
 
 
 #what is the likely good that a women between the age of 40-49 will develop a degree of malignancy of either 1,2,3 during postmenopausal stage. 
