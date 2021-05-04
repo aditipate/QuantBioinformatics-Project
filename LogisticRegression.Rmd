@@ -1,0 +1,81 @@
+---
+title: "Original Analysis"
+author: "Aditi Patel"
+date: "5/3/2021"
+output: word_document
+---
+
+```{r}
+#install.packages("jsonlite", repos="https://cran.rstudio.com/")
+library("jsonlite")
+library(dplyr)
+library(mlbench)
+
+json_file <- 'https://datahub.io/machine-learning/breast-cancer/datapackage.json'
+json_data <- fromJSON(paste(readLines(json_file), collapse=""))
+
+# get list of all resources:
+print(json_data$resources$name)
+
+# print all tabular data(if exists any)
+for(i in 1:length(json_data$resources$datahub$type)){
+  if(json_data$resources$datahub$type[i]=='derived/csv'){
+    path_to_file = json_data$resources$path[i]
+    data <- read.csv(url(path_to_file))
+    print(data)
+  }
+}
+data<-data[sample(1:nrow(data)),]
+drop<-c(150, 93, 51, 265, 55, 32, 72, 241)
+drop<-as.integer(drop)
+data <- data[-drop, ]                                            #drop NA rows 
+#columns numbers 1 through 11, convert to numeric 
+cols<-c(1:9) 
+data[cols]<-sapply(data[cols], as.numeric) 
+#convert type to factor  
+data$Class<-factor(data$Class) 
+head(data)
+```
+```{r}
+#logistic regression model with all 9 covariates 
+model <- glm(Class ~ .,family = binomial(logit), data=data)
+summary(model)
+
+#coeffecients of covariates 
+exp(model$coefficients)
+```
+
+
+```{r}
+library(MASS)
+#step AIC selection starting with all 9 covariates 
+summary(stepAIC(model, direction="backward"))
+```
+
+```{r}
+#reduced model with significant covariates
+reducedmodel<- glm(Class ~ deg.malig,family = binomial(logit), data=data)
+
+exp(reducedmodel$coefficients)
+```
+
+```{r}
+library(caret)
+set.seed(124)
+
+Train <- createDataPartition(data$Class, p=0.75, list=FALSE)
+training <- data[ Train, ]
+testing <- data[ -Train, ]
+
+#fit reduced model on training set + k-fold cross validation 
+train.control<-trainControl(method = "repeatedcv", number = 10, savePredictions = TRUE, repeats = 5)
+
+training$Class<-factor(training$Class) 
+
+cvmodel <- train(Class ~ , data = training, trControl = train.control, method = "glm", family = "binomial")
+
+print(cvmodel)
+
+```
+
+
