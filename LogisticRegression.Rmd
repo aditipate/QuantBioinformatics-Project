@@ -4,6 +4,8 @@ date: "5/1/2021"
 output: word_document
 ---
 
+### We would like to determine significant predictors for tumor Class (whether it has shown recurrence or no recurrence) based on the covariates within the dataset using logistic regression ### 
+
 ```{r}
 #install.packages("jsonlite", repos="https://cran.rstudio.com/")
 library("jsonlite")
